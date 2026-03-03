@@ -18,7 +18,7 @@ const DEFAULT_NETWORKS = {
     devnet: "http://127.0.0.1:26657",
     local: "http://127.0.0.1:26657",
 };
-const CONFIG_PATH = path.join(os.homedir(), ".aethelred", "aeth-cli.json");
+const CONFIG_PATH = path.join(os.homedir(), ".aethelred", "aethel-cli.json");
 function ensureDir(filePath) {
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
 }
@@ -53,8 +53,8 @@ function print(data, format = "text") {
     console.log(data);
 }
 function resolveLocalTestnetComposePath() {
-    if (process.env.AETH_LOCAL_TESTNET_COMPOSE) {
-        return process.env.AETH_LOCAL_TESTNET_COMPOSE;
+    if (process.env.AETHEL_LOCAL_TESTNET_COMPOSE) {
+        return process.env.AETHEL_LOCAL_TESTNET_COMPOSE;
     }
     const candidates = [];
     let cursor = process.cwd();
@@ -109,7 +109,7 @@ function dockerCompose(args) {
 }
 const program = new Command();
 program
-    .name("aeth")
+    .name("aethel")
     .description("Aethelred Developer CLI (network diagnostics, validators, seals, token ops, local testnet)")
     .version("2.0.0")
     .option("-n, --network <network>", "Network (mainnet, testnet, devnet, local)")
@@ -357,7 +357,7 @@ wallet
     .description("Create an unsigned token transfer manifest (for offline signing)")
     .requiredOption("--from <address>", "Sender address")
     .requiredOption("--to <address>", "Recipient address")
-    .requiredOption("--amount <amount>", "Amount (e.g., 1000000uaeth)")
+    .requiredOption("--amount <amount>", "Amount (e.g., 1000000uaethel)")
     .option("--memo <memo>", "Transaction memo")
     .option("--out <file>", "Write manifest to file")
     .action((opts, command) => {
@@ -373,7 +373,7 @@ wallet
             toAddress: opts.to,
             amount: [
                 {
-                    denom: opts.amount.replace(/^[0-9]+/, "").trim() || "uaeth",
+                    denom: opts.amount.replace(/^[0-9]+/, "").trim() || "uaethel",
                     amount: opts.amount.match(/^[0-9]+/)?.[0] ?? opts.amount,
                 },
             ],
