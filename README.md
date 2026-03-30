@@ -6,7 +6,6 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/AethelredFoundation/aethelred-cli/actions"><img src="https://img.shields.io/github/actions/workflow/status/AethelredFoundation/aethelred-cli/cli-ci.yml?branch=main&style=flat-square&label=CI" alt="CI"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue?style=flat-square" alt="License"></a>
   <img src="https://img.shields.io/badge/built_with-Rust-orange?style=flat-square&logo=rust" alt="Rust">
   <a href="https://docs.aethelred.io/cli"><img src="https://img.shields.io/badge/docs-cli-orange?style=flat-square" alt="Docs"></a>
