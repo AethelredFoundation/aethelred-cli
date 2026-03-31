@@ -6,9 +6,15 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/aethelred-foundation/aethelred-cli/actions/workflows/repo-security-baseline.yml"><img src="https://img.shields.io/github/actions/workflow/status/aethelred-foundation/aethelred-cli/repo-security-baseline.yml?branch=main&style=flat-square&label=Security" alt="Security"></a>
+  <a href="https://github.com/aethelred-foundation/aethelred-cli/actions/workflows/docs-hygiene.yml"><img src="https://img.shields.io/github/actions/workflow/status/aethelred-foundation/aethelred-cli/docs-hygiene.yml?branch=main&style=flat-square&label=Docs+Hygiene" alt="Docs Hygiene"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue?style=flat-square" alt="License"></a>
-  <img src="https://img.shields.io/badge/built_with-Rust-orange?style=flat-square&logo=rust" alt="Rust">
-  <a href="https://docs.aethelred.io/cli"><img src="https://img.shields.io/badge/docs-cli-orange?style=flat-square" alt="Docs"></a>
+</p>
+<p align="center">
+  <img src="https://img.shields.io/badge/Rust-1.85+-DEA584?style=flat-square&logo=rust&logoColor=white" alt="Rust">
+  <img src="https://img.shields.io/badge/PQC-Kyber+Dilithium-purple?style=flat-square" alt="PQC">
+  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-lightgrey?style=flat-square" alt="Platform">
+  <a href="https://docs.aethelred.io/cli"><img src="https://img.shields.io/badge/docs-CLI-orange?style=flat-square" alt="Docs"></a>
 </p>
 
 ---
