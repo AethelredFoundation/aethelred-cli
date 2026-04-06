@@ -5,7 +5,9 @@ use serde_json::{json, Value};
 use std::time::{Duration, Instant};
 use tokio::time::sleep;
 
-use crate::commands::api::{file_sha256_hex, print_value, read_file_string, ApiClient};
+use crate::commands::api::{
+    file_sha256_hex, print_value, read_file_string, ApiClient, EMPTY_QUERY,
+};
 use crate::config::Config;
 use crate::JobCommands;
 
@@ -57,7 +59,7 @@ pub async fn run(cmd: JobCommands, config: &Config) -> Result<()> {
         }
         JobCommands::Get { job_id } => {
             let response = client
-                .get_api(&format!("/aethelred/pouw/v1/jobs/{job_id}"), &[])
+                .get_api(&format!("/aethelred/pouw/v1/jobs/{job_id}"), EMPTY_QUERY)
                 .await
                 .with_context(|| format!("failed to fetch job '{job_id}'"))?;
             print_value(&response, &config.output_format)?;
@@ -80,7 +82,10 @@ pub async fn run(cmd: JobCommands, config: &Config) -> Result<()> {
                 follow_logs(&client, config, &job_id).await?;
             } else {
                 let response = client
-                    .get_api(&format!("/aethelred/pouw/v1/jobs/{job_id}/logs"), &[])
+                    .get_api(
+                        &format!("/aethelred/pouw/v1/jobs/{job_id}/logs"),
+                        EMPTY_QUERY,
+                    )
                     .await
                     .with_context(|| format!("failed to fetch logs for job '{job_id}'"))?;
                 print_value(&response, &config.output_format)?;
@@ -112,7 +117,7 @@ async fn wait_for_completion(
 
     loop {
         let response = client
-            .get_api(&format!("/aethelred/pouw/v1/jobs/{job_id}"), &[])
+            .get_api(&format!("/aethelred/pouw/v1/jobs/{job_id}"), EMPTY_QUERY)
             .await
             .with_context(|| format!("failed polling job '{job_id}'"))?;
         let status = extract_status(&response).unwrap_or("unknown".to_string());
@@ -135,7 +140,10 @@ async fn follow_logs(client: &ApiClient, config: &Config, job_id: &str) -> Resul
     println!("Following logs for job '{job_id}' (Ctrl+C to stop)...");
     loop {
         let response = client
-            .get_api(&format!("/aethelred/pouw/v1/jobs/{job_id}/logs"), &[])
+            .get_api(
+                &format!("/aethelred/pouw/v1/jobs/{job_id}/logs"),
+                EMPTY_QUERY,
+            )
             .await
             .with_context(|| format!("failed polling logs for job '{job_id}'"))?;
         print_value(&response, &config.output_format)?;

@@ -3,7 +3,7 @@
 use anyhow::{anyhow, Context, Result};
 use serde_json::json;
 
-use crate::commands::api::{print_value, ApiClient};
+use crate::commands::api::{print_value, ApiClient, EMPTY_QUERY};
 use crate::config::Config;
 use crate::QueryArgs;
 
@@ -12,7 +12,7 @@ pub async fn run(args: QueryArgs, config: &Config) -> Result<()> {
     let query_type = args.query_type.to_lowercase();
 
     let response = match query_type.as_str() {
-        "status" => client.get_api("/v1/status", &[]).await,
+        "status" => client.get_api("/v1/status", EMPTY_QUERY).await,
         "block" => {
             let height = args
                 .params
@@ -30,14 +30,18 @@ pub async fn run(args: QueryArgs, config: &Config) -> Result<()> {
                 .params
                 .first()
                 .ok_or_else(|| anyhow!("query 'tx' requires a transaction hash"))?;
-            client.get_api(&format!("/v1/transactions/{hash}"), &[]).await
+            client
+                .get_api(&format!("/v1/transactions/{hash}"), EMPTY_QUERY)
+                .await
         }
         "account" => {
             let address = args
                 .params
                 .first()
                 .ok_or_else(|| anyhow!("query 'account' requires an address"))?;
-            client.get_api(&format!("/v1/accounts/{address}"), &[]).await
+            client
+                .get_api(&format!("/v1/accounts/{address}"), EMPTY_QUERY)
+                .await
         }
         "model" => {
             let model_id = args
@@ -45,7 +49,7 @@ pub async fn run(args: QueryArgs, config: &Config) -> Result<()> {
                 .first()
                 .ok_or_else(|| anyhow!("query 'model' requires a model ID/hash"))?;
             client
-                .get_api(&format!("/aethelred/pouw/v1/models/{model_id}"), &[])
+                .get_api(&format!("/aethelred/pouw/v1/models/{model_id}"), EMPTY_QUERY)
                 .await
         }
         "seal" => {
@@ -54,7 +58,7 @@ pub async fn run(args: QueryArgs, config: &Config) -> Result<()> {
                 .first()
                 .ok_or_else(|| anyhow!("query 'seal' requires a seal ID"))?;
             client
-                .get_api(&format!("/aethelred/seal/v1/seals/{seal_id}"), &[])
+                .get_api(&format!("/aethelred/seal/v1/seals/{seal_id}"), EMPTY_QUERY)
                 .await
         }
         "job" => {
@@ -63,7 +67,7 @@ pub async fn run(args: QueryArgs, config: &Config) -> Result<()> {
                 .first()
                 .ok_or_else(|| anyhow!("query 'job' requires a job ID"))?;
             client
-                .get_api(&format!("/aethelred/pouw/v1/jobs/{job_id}"), &[])
+                .get_api(&format!("/aethelred/pouw/v1/jobs/{job_id}"), EMPTY_QUERY)
                 .await
         }
         other => Err(anyhow!(

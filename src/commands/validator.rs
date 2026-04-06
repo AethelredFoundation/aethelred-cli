@@ -3,7 +3,7 @@
 use anyhow::{Context, Result};
 use serde_json::json;
 
-use crate::commands::api::{print_value, ApiClient};
+use crate::commands::api::{print_value, ApiClient, EMPTY_QUERY};
 use crate::config::Config;
 use crate::ValidatorCommands;
 
@@ -28,14 +28,14 @@ pub async fn run(cmd: ValidatorCommands, config: &Config) -> Result<()> {
             let stats = client
                 .get_api(
                     &format!("/aethelred/pouw/v1/validators/{address}/stats"),
-                    &[],
+                    EMPTY_QUERY,
                 )
                 .await
                 .with_context(|| format!("failed to fetch validator stats for '{address}'"))?;
             let capability = client
                 .get_api(
                     &format!("/aethelred/pouw/v1/validators/{address}/capability"),
-                    &[],
+                    EMPTY_QUERY,
                 )
                 .await
                 .unwrap_or_else(|err| json!({ "error": err.to_string() }));
@@ -97,7 +97,7 @@ pub async fn run(cmd: ValidatorCommands, config: &Config) -> Result<()> {
         }
         ValidatorCommands::Status => {
             let response = client
-                .get_api("/aethelred/pouw/v1/validators/me/status", &[])
+                .get_api("/aethelred/pouw/v1/validators/me/status", EMPTY_QUERY)
                 .await
                 .context("failed to fetch validator status")?;
             print_value(&response, &config.output_format)?;

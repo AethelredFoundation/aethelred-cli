@@ -114,13 +114,17 @@ pub async fn run(args: InitArgs, config: &Config) -> anyhow::Result<()> {
 
     // Gather project info interactively or from args
     let project_config = if args.yes {
+        let project_name = args
+            .name
+            .clone()
+            .unwrap_or_else(|| "aethelred-project".to_string());
         ProjectConfig {
-            name: args.name.unwrap_or_else(|| "aethelred-project".to_string()),
+            name: project_name.clone(),
             template: parse_template(&args.template),
             language: args.lang.clone(),
-            directory: args.dir.unwrap_or_else(|| {
-                PathBuf::from(args.name.as_deref().unwrap_or("aethelred-project"))
-            }),
+            directory: args
+                .dir
+                .unwrap_or_else(|| PathBuf::from(project_name.as_str())),
             enable_tee: true,
             enable_zkml: false,
             enable_cicd: true,

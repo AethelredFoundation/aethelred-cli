@@ -4,7 +4,7 @@ use anyhow::{Context, Result};
 use serde_json::json;
 use std::fs;
 
-use crate::commands::api::{file_sha256_hex, print_value, ApiClient};
+use crate::commands::api::{file_sha256_hex, print_value, ApiClient, EMPTY_QUERY};
 use crate::config::Config;
 use crate::ModelCommands;
 
@@ -52,7 +52,7 @@ pub async fn run(cmd: ModelCommands, config: &Config) -> Result<()> {
         }
         ModelCommands::Get { model } => {
             let response = client
-                .get_api(&format!("/aethelred/pouw/v1/models/{model}"), &[])
+                .get_api(&format!("/aethelred/pouw/v1/models/{model}"), EMPTY_QUERY)
                 .await
                 .with_context(|| format!("failed to fetch model '{model}'"))?;
             print_value(&response, &config.output_format)?;
@@ -90,7 +90,10 @@ pub async fn run(cmd: ModelCommands, config: &Config) -> Result<()> {
         }
         ModelCommands::Export(args) => {
             let response = client
-                .get_api(&format!("/aethelred/pouw/v1/models/{}", args.model), &[])
+                .get_api(
+                    &format!("/aethelred/pouw/v1/models/{}", args.model),
+                    EMPTY_QUERY,
+                )
                 .await
                 .with_context(|| format!("failed to export model '{}'", args.model))?;
             let export = json!({
