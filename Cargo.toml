@@ -61,16 +61,10 @@ reqwest = { version = "0.11", features = ["json", "rustls-tls"], default-feature
 rand = "0.8"
 ring = "0.17"
 
-# Build info
-vergen = { version = "8.3", features = ["git", "rustc"] }
-
 [dev-dependencies]
 assert_cmd = "2.0"
 predicates = "3.1"
 tempfile = "3.10"
-
-[build-dependencies]
-vergen = { version = "8.3", features = ["git", "rustc"] }
 
 [profile.release]
 lto = true

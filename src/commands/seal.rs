@@ -4,7 +4,7 @@ use anyhow::{Context, Result};
 use serde_json::json;
 use std::fs;
 
-use crate::commands::api::{print_value, ApiClient};
+use crate::commands::api::{print_value, ApiClient, EMPTY_QUERY};
 use crate::config::Config;
 use crate::SealCommands;
 
@@ -38,7 +38,7 @@ pub async fn run(cmd: SealCommands, config: &Config) -> Result<()> {
         }
         SealCommands::Get { seal_id } => {
             let response = client
-                .get_api(&format!("/aethelred/seal/v1/seals/{seal_id}"), &[])
+                .get_api(&format!("/aethelred/seal/v1/seals/{seal_id}"), EMPTY_QUERY)
                 .await
                 .with_context(|| format!("failed to fetch seal '{seal_id}'"))?;
             print_value(&response, &config.output_format)?;

@@ -3,7 +3,7 @@
 use anyhow::{anyhow, Context, Result};
 use serde_json::{json, Value};
 
-use crate::commands::api::{print_value, ApiClient};
+use crate::commands::api::{print_value, ApiClient, EMPTY_QUERY};
 use crate::config::{Config, NetworkPreset};
 use crate::NetworkCommands;
 
@@ -22,7 +22,7 @@ pub async fn run(cmd: NetworkCommands, config: &Config) -> Result<()> {
 async fn status(config: &Config) -> Result<()> {
     let client = ApiClient::new(config)?;
     let api_status = client
-        .get_api("/v1/status", &[])
+        .get_api("/v1/status", EMPTY_QUERY)
         .await
         .unwrap_or_else(|err| {
             json!({
@@ -30,12 +30,15 @@ async fn status(config: &Config) -> Result<()> {
                 "error": err.to_string()
             })
         });
-    let rpc_status = client.get_rpc("/status", &[]).await.unwrap_or_else(|err| {
-        json!({
-            "status": "unreachable",
-            "error": err.to_string()
-        })
-    });
+    let rpc_status = client
+        .get_rpc("/status", EMPTY_QUERY)
+        .await
+        .unwrap_or_else(|err| {
+            json!({
+                "status": "unreachable",
+                "error": err.to_string()
+            })
+        });
 
     let output = json!({
         "network": config.network,
@@ -105,18 +108,23 @@ fn switch_network(config: &Config, network: &str) -> Result<()> {
 
 async fn params(config: &Config) -> Result<()> {
     let client = ApiClient::new(config)?;
-    let value = client
-        .get_api("/cosmos/base/tendermint/v1beta1/node_info", &[])
+    let value = match client
+        .get_api("/cosmos/base/tendermint/v1beta1/node_info", EMPTY_QUERY)
         .await
-        .or_else(|_| client.get_api("/v1/status", &[]).await)
-        .context("failed to fetch chain parameters")?;
+    {
+        Ok(response) => response,
+        Err(_) => client
+            .get_api("/v1/status", EMPTY_QUERY)
+            .await
+            .context("failed to fetch chain parameters")?,
+    };
     print_value(&value, &config.output_format)
 }
 
 async fn blocks(config: &Config, count: usize) -> Result<()> {
     let client = ApiClient::new(config)?;
     let latest = client
-        .get_api("/cosmos/base/tendermint/v1beta1/blocks/latest", &[])
+        .get_api("/cosmos/base/tendermint/v1beta1/blocks/latest", EMPTY_QUERY)
         .await
         .context("failed to fetch latest block")?;
 
@@ -151,10 +159,12 @@ async fn blocks(config: &Config, count: usize) -> Result<()> {
 
 async fn pending(config: &Config) -> Result<()> {
     let client = ApiClient::new(config)?;
-    let value = client
-        .get_rpc("/unconfirmed_txs", &[])
-        .await
-        .or_else(|_| client.get_api("/v1/transactions?status=pending", &[]).await)
-        .context("failed to fetch pending transactions")?;
+    let value = match client.get_rpc("/unconfirmed_txs", EMPTY_QUERY).await {
+        Ok(response) => response,
+        Err(_) => client
+            .get_api("/v1/transactions?status=pending", EMPTY_QUERY)
+            .await
+            .context("failed to fetch pending transactions")?,
+    };
     print_value(&value, &config.output_format)
 }

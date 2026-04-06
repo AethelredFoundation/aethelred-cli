@@ -10,6 +10,8 @@ use std::time::Duration;
 
 use crate::config::Config;
 
+pub const EMPTY_QUERY: &[(&str, &str)] = &[];
+
 pub struct ApiClient {
     client: Client,
     api_endpoint: String,
@@ -48,7 +50,7 @@ impl ApiClient {
         self.request_json(
             Method::POST,
             &format!("{}{}", self.api_endpoint, path),
-            &[],
+            EMPTY_QUERY,
             Some(body),
         )
         .await
@@ -58,7 +60,7 @@ impl ApiClient {
         self.request_json(
             Method::PUT,
             &format!("{}{}", self.api_endpoint, path),
-            &[],
+            EMPTY_QUERY,
             Some(body),
         )
         .await
@@ -68,7 +70,7 @@ impl ApiClient {
         self.request_json(
             Method::PATCH,
             &format!("{}{}", self.api_endpoint, path),
-            &[],
+            EMPTY_QUERY,
             Some(body),
         )
         .await

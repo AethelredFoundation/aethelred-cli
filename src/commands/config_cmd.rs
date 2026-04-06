@@ -9,6 +9,22 @@ use crate::commands::api::print_value;
 use crate::config::Config;
 use crate::ConfigCommands;
 
+fn is_sensitive_key(key: &str) -> bool {
+    matches!(
+        key.to_ascii_lowercase().as_str(),
+        "api_key"
+            | "auth_token"
+            | "bearer_token"
+            | "private_key"
+            | "mnemonic"
+            | "password"
+            | "seed_phrase"
+            | "secret"
+    ) || key.to_ascii_lowercase().contains("token")
+        || key.to_ascii_lowercase().contains("secret")
+        || key.to_ascii_lowercase().contains("password")
+}
+
 pub async fn run(cmd: ConfigCommands, config: &Config) -> Result<()> {
     match cmd {
         ConfigCommands::Show => show(config),
@@ -46,7 +62,11 @@ fn set_value(config: &Config, key: &str, value: &str) -> Result<()> {
         .set(key, value)
         .with_context(|| format!("failed to set '{key}'"))?;
     updated.save(None).context("failed to save config")?;
-    println!("Set {key} = {value}");
+    if is_sensitive_key(key) {
+        println!("Set {key} = [REDACTED]");
+    } else {
+        println!("Set {key} = {value}");
+    }
     Ok(())
 }
 
@@ -54,7 +74,11 @@ fn get_value(config: &Config, key: &str) -> Result<()> {
     let value = config
         .get(key)
         .ok_or_else(|| anyhow!("key '{key}' not found"))?;
-    println!("{value}");
+    if is_sensitive_key(key) {
+        println!("[REDACTED]");
+    } else {
+        println!("{value}");
+    }
     Ok(())
 }
 

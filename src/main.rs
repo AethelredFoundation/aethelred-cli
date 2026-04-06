@@ -1140,14 +1140,16 @@ The Most Advanced AI Blockchain Platform
 
 fn print_version() {
     let sdk_version = read_sdk_version_from_matrix().unwrap_or_else(|| "unknown".to_string());
+    let build_sha = option_env!("VERGEN_GIT_SHA").unwrap_or("unavailable");
+    let rust_semver = option_env!("VERGEN_RUSTC_SEMVER").unwrap_or("unavailable");
 
     println!("{}", BANNER.cyan());
     println!();
     println!("  {} {}", "CLI Version:".bold(), env!("CARGO_PKG_VERSION"));
     println!("  {} {}", "SDK Version:".bold(), sdk_version);
     println!("  {} {}", "API Version:".bold(), "v1");
-    println!("  {} {}", "Build:".bold(), env!("VERGEN_GIT_SHA"));
-    println!("  {} {}", "Rust:".bold(), env!("VERGEN_RUSTC_SEMVER"));
+    println!("  {} {}", "Build:".bold(), build_sha);
+    println!("  {} {}", "Rust:".bold(), rust_semver);
     println!();
     println!("  {} https://aethelred.io", "Website:".bold());
     println!("  {} https://docs.aethelred.io", "Docs:".bold());
@@ -1170,7 +1172,15 @@ struct VersionEntry {
 }
 
 fn read_sdk_version_from_matrix() -> Option<String> {
-    let raw = include_str!("../../sdk/version-matrix.json");
-    let matrix: VersionMatrix = serde_json::from_str(raw).ok()?;
+    let manifest_dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let candidate_paths = [
+        manifest_dir.join("../../sdk/version-matrix.json"),
+        manifest_dir.join("sdk/version-matrix.json"),
+    ];
+
+    let raw = candidate_paths
+        .iter()
+        .find_map(|path| std::fs::read_to_string(path).ok())?;
+    let matrix: VersionMatrix = serde_json::from_str(&raw).ok()?;
     Some(matrix.packages.go.version)
 }

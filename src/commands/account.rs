@@ -9,7 +9,7 @@ use sha2::{Digest, Sha256};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use crate::commands::api::{parse_key_value_params, print_value, ApiClient};
+use crate::commands::api::{parse_key_value_params, print_value, ApiClient, EMPTY_QUERY};
 use crate::config::Config;
 use crate::AccountCommands;
 
@@ -165,18 +165,19 @@ async fn balance(config: &Config, explicit_address: Option<String>) -> Result<()
     };
 
     let client = ApiClient::new(config)?;
-    let response = client
-        .get_api(&format!("/v1/accounts/{target_address}"), &[])
+    let response = match client
+        .get_api(&format!("/v1/accounts/{target_address}"), EMPTY_QUERY)
         .await
-        .or_else(|_| {
-            client
-                .get_api(
-                    "/cosmos/bank/v1beta1/balances",
-                    &[("address", target_address.clone())],
-                )
-                .await
-        })
-        .with_context(|| format!("failed to fetch balance for {target_address}"))?;
+    {
+        Ok(value) => value,
+        Err(_) => client
+            .get_api(
+                "/cosmos/bank/v1beta1/balances",
+                &[("address", target_address.as_str())],
+            )
+            .await
+            .with_context(|| format!("failed to fetch balance for {target_address}"))?,
+    };
 
     print_value(&response, &config.output_format)
 }
@@ -192,24 +193,20 @@ async fn send(config: &Config, to: &str, amount: &str, denom: &str) -> Result<()
         "denom": denom
     });
     let client = ApiClient::new(config)?;
-    let response = client
-        .post_api("/v1/transactions/send", &payload)
-        .await
-        .or_else(|_| {
-            client
-                .post_api(
-                    "/cosmos/tx/v1beta1/txs",
-                    &json!({
-                        "body": parse_key_value_params(&[
-                            format!("from={from}"),
-                            format!("to={to}"),
-                            format!("amount={amount}{denom}"),
-                        ])?
-                    }),
-                )
-                .await
-        })
-        .context("failed to submit send transaction")?;
+    let fallback_payload = json!({
+        "body": parse_key_value_params(&[
+            format!("from={from}"),
+            format!("to={to}"),
+            format!("amount={amount}{denom}"),
+        ])?
+    });
+    let response = match client.post_api("/v1/transactions/send", &payload).await {
+        Ok(value) => value,
+        Err(_) => client
+            .post_api("/cosmos/tx/v1beta1/txs", &fallback_payload)
+            .await
+            .context("failed to submit send transaction")?,
+    };
 
     print_value(&response, &config.output_format)
 }

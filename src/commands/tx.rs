@@ -5,7 +5,7 @@ use serde_json::json;
 use std::time::{Duration, Instant};
 use tokio::time::sleep;
 
-use crate::commands::api::{parse_key_value_params, print_value, ApiClient};
+use crate::commands::api::{parse_key_value_params, print_value, ApiClient, EMPTY_QUERY};
 use crate::config::Config;
 use crate::TxArgs;
 
@@ -23,21 +23,17 @@ pub async fn run(args: TxArgs, config: &Config) -> Result<()> {
     }
 
     let client = ApiClient::new(config)?;
-    let response = client
-        .post_api("/v1/transactions", &payload)
-        .await
-        .or_else(|_| {
-            client
-                .post_api(
-                    "/cosmos/tx/v1beta1/txs",
-                    &json!({
-                        "body": payload["params"],
-                        "mode": "BROADCAST_MODE_SYNC"
-                    }),
-                )
-                .await
-        })
-        .context("failed to submit transaction")?;
+    let fallback_payload = json!({
+        "body": payload["params"],
+        "mode": "BROADCAST_MODE_SYNC"
+    });
+    let response = match client.post_api("/v1/transactions", &payload).await {
+        Ok(value) => value,
+        Err(_) => client
+            .post_api("/cosmos/tx/v1beta1/txs", &fallback_payload)
+            .await
+            .context("failed to submit transaction")?,
+    };
 
     print_value(&response, &config.output_format)?;
 
@@ -68,14 +64,17 @@ async fn wait_for_tx_confirmation(
     let started = Instant::now();
 
     loop {
-        let response = client
-            .get_api(&format!("/v1/transactions/{tx_hash}"), &[])
+        let response = match client
+            .get_api(&format!("/v1/transactions/{tx_hash}"), EMPTY_QUERY)
             .await
-            .or_else(|_| {
+        {
+            Ok(value) => Ok(value),
+            Err(_) => {
                 client
-                    .get_api("/cosmos/tx/v1beta1/txs", &[("hash", tx_hash.to_string())])
+                    .get_api("/cosmos/tx/v1beta1/txs", &[("hash", tx_hash)])
                     .await
-            });
+            }
+        };
 
         match response {
             Ok(value) => {
