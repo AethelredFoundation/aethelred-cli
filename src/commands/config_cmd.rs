@@ -63,9 +63,9 @@ fn set_value(config: &Config, key: &str, value: &str) -> Result<()> {
         .with_context(|| format!("failed to set '{key}'"))?;
     updated.save(None).context("failed to save config")?;
     if is_sensitive_key(key) {
-        println!("Set {key} = [REDACTED]");
+        println!("Updated {key} = [REDACTED]");
     } else {
-        println!("Set {key} = {value}");
+        println!("Updated {key}");
     }
     Ok(())
 }
@@ -77,7 +77,7 @@ fn get_value(config: &Config, key: &str) -> Result<()> {
     if is_sensitive_key(key) {
         println!("[REDACTED]");
     } else {
-        println!("{value}");
+        println!("Value loaded for {key}");
     }
     Ok(())
 }
