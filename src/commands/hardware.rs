@@ -61,7 +61,7 @@ pub enum HardwareCommands {
 #[derive(clap::Args, Debug, Clone)]
 pub struct HardwareDetectArgs {
     /// Detect specific hardware type (tee, gpu, all)
-    #[arg(short, long, default_value = "all")]
+    #[arg(short = 't', long, default_value = "all")]
     pub hardware_type: String,
 
     /// Show detailed capabilities
@@ -81,7 +81,7 @@ pub struct HardwareDetectArgs {
 #[derive(clap::Args, Debug, Clone)]
 pub struct HardwareSimulateArgs {
     /// Hardware type to simulate
-    #[arg(short, long)]
+    #[arg(short = 't', long)]
     pub hardware: String,
 
     /// Simulation mode (full, minimal, attestation-only)
@@ -129,7 +129,7 @@ pub struct HardwareBenchArgs {
 #[derive(clap::Args, Debug, Clone)]
 pub struct HardwareAttestArgs {
     /// Hardware type for attestation
-    #[arg(short, long)]
+    #[arg(short = 't', long)]
     pub hardware: String,
 
     /// Output file for attestation report

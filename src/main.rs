@@ -31,19 +31,19 @@ mod utils;
 #[command(propagate_version = true)]
 struct Cli {
     /// Configuration file path
-    #[arg(short, long, global = true)]
+    #[arg(long, global = true)]
     config: Option<PathBuf>,
 
     /// Network to connect to (mainnet, testnet, devnet, local)
-    #[arg(short, long, global = true, default_value = "testnet")]
+    #[arg(long, global = true, default_value = "testnet")]
     network: String,
 
     /// Output format (text, json, yaml, table)
-    #[arg(short, long, global = true, default_value = "text")]
+    #[arg(long, global = true, default_value = "text")]
     output: String,
 
     /// Enable verbose output
-    #[arg(short, long, global = true)]
+    #[arg(long, global = true)]
     verbose: bool,
 
     /// Disable colored output
@@ -138,6 +138,10 @@ struct InitArgs {
     #[arg(short, long)]
     dir: Option<PathBuf>,
 
+    /// Project directory for non-interactive initialization
+    #[arg(long, conflicts_with = "dir")]
+    home: Option<PathBuf>,
+
     /// Programming language (python, typescript, rust, go)
     #[arg(short, long, default_value = "python")]
     lang: String,
@@ -215,8 +219,8 @@ struct ModelRegisterArgs {
     name: String,
 
     /// Model version
-    #[arg(short, long, default_value = "1.0.0")]
-    version: String,
+    #[arg(long = "model-version", default_value = "1.0.0")]
+    model_version: String,
 
     /// Model description
     #[arg(short, long)]
@@ -983,7 +987,7 @@ struct DeployArgs {
     name: Option<String>,
 
     /// Target network
-    #[arg(short, long)]
+    #[arg(long)]
     network: Option<String>,
 
     /// Gas limit
