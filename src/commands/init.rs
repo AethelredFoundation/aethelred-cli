@@ -113,7 +113,8 @@ pub async fn run(args: InitArgs, config: &Config) -> anyhow::Result<()> {
     println!();
 
     // Gather project info interactively or from args
-    let project_config = if args.yes {
+    let non_interactive = args.yes || args.home.is_some();
+    let project_config = if non_interactive {
         let project_name = args
             .name
             .clone()
@@ -123,7 +124,9 @@ pub async fn run(args: InitArgs, config: &Config) -> anyhow::Result<()> {
             template: parse_template(&args.template),
             language: args.lang.clone(),
             directory: args
-                .dir
+                .home
+                .clone()
+                .or_else(|| args.dir.clone())
                 .unwrap_or_else(|| PathBuf::from(project_name.as_str())),
             enable_tee: true,
             enable_zkml: false,
@@ -175,7 +178,7 @@ pub async fn run(args: InitArgs, config: &Config) -> anyhow::Result<()> {
     println!();
 
     // Confirm if not using --yes
-    if !args.yes {
+    if !non_interactive {
         let confirm = Confirm::with_theme(&ColorfulTheme::default())
             .with_prompt("Create project with these settings?")
             .default(true)
@@ -276,7 +279,11 @@ async fn gather_project_config(args: &InitArgs, config: &Config) -> anyhow::Resu
     let language = languages[lang_selection].1.to_string();
 
     // Directory
-    let directory = args.dir.clone().unwrap_or_else(|| PathBuf::from(&name));
+    let directory = args
+        .home
+        .clone()
+        .or_else(|| args.dir.clone())
+        .unwrap_or_else(|| PathBuf::from(&name));
 
     // TEE configuration
     let enable_tee = if template.requires_tee() {
@@ -425,8 +432,16 @@ fn create_directory_structure(
     lang: &str,
 ) -> anyhow::Result<()> {
     let base_dirs = match template {
-        IndustryTemplate::Minimal => vec!["src", "config"],
-        IndustryTemplate::General => vec!["src", "config", "models", "tests", "scripts", "data"],
+        IndustryTemplate::Minimal => vec!["src", "config", ".github/workflows"],
+        IndustryTemplate::General => vec![
+            "src",
+            "config",
+            "models",
+            "tests",
+            "scripts",
+            "data",
+            ".github/workflows",
+        ],
         IndustryTemplate::Finance => vec![
             "src",
             "src/models",

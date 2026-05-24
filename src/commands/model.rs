@@ -35,7 +35,7 @@ pub async fn run(cmd: ModelCommands, config: &Config) -> Result<()> {
             let hash = file_sha256_hex(&args.file)?;
             let payload = json!({
                 "name": args.name,
-                "version": args.version,
+                "version": args.model_version,
                 "description": args.description,
                 "tags": args.tags,
                 "model_hash": hash,
